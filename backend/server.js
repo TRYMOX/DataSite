@@ -12,6 +12,11 @@ const PORT = process.env.DATASITE_PORT || 3000;
 app.use(express.json({ limit: '15mb' }));
 
 // Sert le frontend (HTML/CSS/JS statiques)
+// sert theme.css depuis hub/frontend/ (source unique de la palette) pour un
+// accès direct à ce port sans passer par le proxy du hub
+app.get('/theme.css', (req, res) => {
+  res.sendFile(path.join(__dirname, '../../../frontend/theme.css'));
+});
 app.use(express.static(path.join(__dirname, '../frontend')));
 
 // outil local mono-utilisateur : pas d'authentification
