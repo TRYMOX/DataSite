@@ -1,13 +1,11 @@
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
 
+/* --bg/--panel/--panel-2/--border/--text/--text-dim/--accent
+   viennent de theme.css (voir hub/frontend/theme.css), chargé avant ce
+   fichier — source unique partagée avec les autres outils du hub. Le
+   thème clair ci-dessous (:root[data-theme="light"]) reste local : il a
+   une spécificité plus élevée et continue donc à primer normalement. */
 :root{
-  --bg:        #1c1a16;
-  --panel:     #26231d;
-  --panel-2:   #3a2f20;
-  --border:    #423d32;
-  --text:      #eeeae0;
-  --text-dim:  #b3ac9c;
-  --accent:    #e0954a;
   --accent-dim:#8a5a2a;
   --accent-soft: rgba(224, 149, 74, 0.16);
   --ok:        #4fbf7a;
@@ -91,52 +89,29 @@ textarea:focus-visible{
 }
 
 /* ---------- SIDEBAR ---------- */
+/* Rail d'actions rapides (toujours visible) + panel bases/tables (repliable) —
+   même structure à deux colonnes que le template 01-minimalist-two-level-sidebar
+   (voir template/sidebar/ à la racine du repo) */
 .sidebar{
   position: relative;
-  width: 260px;
+  width: 316px;
   flex-shrink: 0;
-  background:var(--panel);
-  border-right:1px solid var(--border);
   display:flex;
-  flex-direction:column;
-  padding:20px 0;
+  flex-direction:row;
+  border-right:1px solid var(--border);
   transition: width 0.18s ease;
 }
 
-.btn-sidebar-toggle{
-  position: absolute;
-  top: 18px;
-  right: -12px;
-  width: 24px;
-  height: 24px;
-  background: var(--panel-2);
-  border: 1px solid var(--border);
-  border-radius: 50%;
-  color: var(--text-dim);
-  font-family: var(--font-ui);
-  font-size: 12px;
-  line-height: 1;
-  cursor: pointer;
-  z-index: 10;
-  transition: color 0.15s ease, border-color 0.15s ease, transform 0.18s ease;
-}
-
-.btn-sidebar-toggle:hover{
-  color: var(--accent);
-  border-color: var(--accent-dim);
-}
-
 .sidebar.collapsed{
-  width: 64px;
+  width: 128px;
 }
 
 .sidebar.collapsed .logo-text,
 .sidebar.collapsed .subtitle,
 .sidebar.collapsed .db-meta,
 .sidebar.collapsed .db-item-right,
-.sidebar.collapsed .label-text,
 .sidebar.collapsed .sidebar-footer,
-.sidebar.collapsed .btn-theme-toggle{
+.sidebar.collapsed .ds-search-label{
   display: none;
 }
 
@@ -144,13 +119,7 @@ textarea:focus-visible{
   transform: rotate(180deg);
 }
 
-.sidebar.collapsed .sidebar-header{
-  padding-left: 0;
-  padding-right: 0;
-  text-align: center;
-}
-
-.sidebar.collapsed .sidebar-header .logo{
+.sidebar.collapsed .sidebar-panel-header{
   justify-content: center;
 }
 
@@ -158,31 +127,47 @@ textarea:focus-visible{
   gap: 0;
 }
 
-.sidebar.collapsed .db-item{
+.sidebar.collapsed .db-item,
+.sidebar.collapsed .ds-search-trigger{
   justify-content: center;
 }
 
-.sidebar.collapsed .btn-new-db{
-  text-align: center;
+/* pas d'icône par table à afficher en mode réduit (contrairement aux bases,
+   qui ont chacune leur emoji) : la sous-liste devient illisible, on la cache
+   entièrement plutôt que de laisser du texte écrasé sur une colonne étroite */
+.sidebar.collapsed .table-list-host{
+  display: none;
 }
 
-.sidebar-header{
-  padding: 0 20px 18px 20px;
-  border-bottom:1px solid var(--border);
-  margin-bottom:14px;
+.sidebar.collapsed .ds-search-trigger{
+  margin-left: 9px;
+  margin-right: 9px;
 }
 
-.sidebar-header .logo{
-  font-family:var(--font-mono);
-  font-weight:700;
-  font-size:15px;
-  letter-spacing:0.5px;
-  display:flex;
-  align-items:center;
-  gap:8px;
+/* ---- Rail : actions globales (nouvelle base, import, thème) ---- */
+.sidebar-rail{
+  flex-shrink: 0;
+  width: 56px;
+  height: 100%;
+  background: var(--bg);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 16px 9px;
 }
 
-.sidebar-header .logo .dot{
+.sidebar-rail-logo{
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 6px;
+}
+
+.sidebar-rail-logo .dot{
   width:8px; height:8px; border-radius:50%;
   background:var(--ok);
   box-shadow:0 0 8px var(--ok);
@@ -194,11 +179,116 @@ textarea:focus-visible{
   50%{opacity:0.4;}
 }
 
+.rail-btn{
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--text-dim);
+  font-size: 15px;
+  font-family: var(--font-ui);
+  cursor: pointer;
+  transition: background 0.15s var(--ease), color 0.15s var(--ease);
+}
+
+.rail-btn:hover{
+  background: var(--panel-2);
+  color: var(--accent);
+}
+
+.rail-spacer{
+  flex: 1;
+}
+
+/* ---- Panel : base sélectionnée + liste des tables, repliable ---- */
+.sidebar-panel{
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--panel);
+  overflow: hidden;
+}
+
+.sidebar-panel-header{
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 18px 14px 14px 16px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 14px;
+}
+
+.sidebar-header .logo{
+  font-family:var(--font-mono);
+  font-weight:700;
+  font-size:15px;
+  letter-spacing:0.5px;
+}
+
 .sidebar-header .subtitle{
   font-size:11px;
   color:var(--text-dim);
   margin-top:4px;
   font-family:var(--font-mono);
+}
+
+.btn-sidebar-toggle{
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  color: var(--text-dim);
+  font-family: var(--font-ui);
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease, transform 0.18s ease;
+}
+
+.btn-sidebar-toggle:hover{
+  color: var(--accent);
+  border-color: var(--accent-dim);
+}
+
+.ds-search-trigger{
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 14px 14px 16px;
+  padding: 8px 12px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  color: var(--text-dim);
+  font-family: var(--font-ui);
+  font-size: 12.5px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.ds-search-trigger:hover{
+  border-color: var(--accent-dim);
+  color: var(--text);
+}
+
+.ds-search-icon{
+  flex-shrink: 0;
+  font-size: 12px;
+}
+
+.ds-search-label{
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .db-list{
@@ -215,10 +305,9 @@ textarea:focus-visible{
   align-items:center;
   justify-content:space-between;
   padding:10px 12px;
-  border-radius:var(--radius-sm);
-  cursor:pointer;
-  transition:background 0.15s var(--ease), box-shadow 0.15s var(--ease);
-  border:1px solid transparent;
+  border-radius:var(--radius-md);
+  cursor:grab;
+  transition:background 0.15s var(--ease);
 }
 
 .db-item:hover{
@@ -227,8 +316,6 @@ textarea:focus-visible{
 
 .db-item.active{
   background:var(--accent-soft);
-  border-color:var(--accent-dim);
-  box-shadow: inset 3px 0 0 var(--accent);
 }
 
 .db-item.active .db-name{
@@ -305,58 +392,9 @@ textarea:focus-visible{
   background: rgba(224, 90, 90, 0.1);
 }
 
-.sidebar-buttons{
-  display:flex;
-  gap: 8px;
-  margin: 10px 10px 0 10px;
-}
-
-.btn-new-db{
-  flex: 1;
-  min-width: 0;
-  padding: 9px 12px;
-  background: transparent;
-  border: 1px dashed var(--border);
-  border-radius: 6px;
-  color: var(--text-dim);
-  font-family: var(--font-ui);
-  font-size: 12.5px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.btn-new-db:hover{
-  border-color: var(--accent-dim);
-  color: var(--accent);
-  background: var(--panel-2);
-}
-
-.btn-import-db{
-  flex-shrink: 0;
-  width: 36px;
-  background: transparent;
-  border: 1px dashed var(--border);
-  border-radius: 6px;
-  color: var(--text-dim);
-  font-size: 14px;
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.btn-import-db:hover{
-  border-color: var(--accent-dim);
-  color: var(--accent);
-  background: var(--panel-2);
-}
-
-.sidebar.collapsed .btn-import-db{
-  display: none;
-}
-
 .sidebar-footer{
   margin-top:auto;
-  padding:14px 20px 0 20px;
+  padding:14px 20px 16px 20px;
   border-top:1px solid var(--border);
   font-size:11px;
   color:var(--text-dim);
@@ -1138,7 +1176,7 @@ tbody tr:hover .col-pinned{
     top: 0;
     left: 0;
     height: 100vh;
-    width: 260px !important;
+    width: 316px !important;
     z-index: 160;
     transform: translateX(-100%);
     transition: transform 0.2s ease;
@@ -1152,10 +1190,13 @@ tbody tr:hover .col-pinned{
   .sidebar.collapsed .subtitle,
   .sidebar.collapsed .db-meta,
   .sidebar.collapsed .db-item-right,
-  .sidebar.collapsed .label-text,
   .sidebar.collapsed .sidebar-footer,
-  .sidebar.collapsed .btn-theme-toggle{
+  .sidebar.collapsed .ds-search-label{
     display: revert;
+  }
+
+  .sidebar.collapsed .sidebar-panel-header{
+    justify-content: space-between;
   }
 
   .sidebar-backdrop{
@@ -2470,27 +2511,6 @@ body.graph-connecting{
 
 body.graph-connecting .graph-canvas{
   cursor: crosshair;
-}
-
-/* ---------- THÈME CLAIR/SOMBRE ---------- */
-.btn-theme-toggle{
-  background: transparent;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  color: var(--text-dim);
-  font-size: 11px;
-  font-family: var(--font-ui);
-  cursor: pointer;
-  padding: 6px 10px;
-  margin-top: 8px;
-  width: 100%;
-  text-align: left;
-  transition: color 0.12s ease, border-color 0.12s ease;
-}
-
-.btn-theme-toggle:hover{
-  color: var(--text);
-  border-color: var(--text-dim);
 }
 
 /* ---------- MODALE COLONNES ---------- */

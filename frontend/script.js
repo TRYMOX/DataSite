@@ -3245,6 +3245,7 @@ function closeGlobalSearchModal() {
   document.getElementById('modalGlobalSearch').classList.remove('open');
 }
 
+document.getElementById('btnGlobalSearch').addEventListener('click', openGlobalSearchModal);
 document.getElementById('closeGlobalSearch').addEventListener('click', closeGlobalSearchModal);
 document.getElementById('modalGlobalSearch').addEventListener('click', (e) => {
   if (e.target === document.getElementById('modalGlobalSearch')) closeGlobalSearchModal();
@@ -3528,9 +3529,12 @@ btnSidebarToggle.addEventListener('click', () => {
 
 const btnThemeToggle = document.getElementById('btnThemeToggle');
 
+// bouton icône seule dans le rail (voir index.html) : le libellé complet vit
+// dans le title (tooltip) plutôt que dans le texte affiché
 function updateThemeToggleLabel() {
   const isLight = document.documentElement.getAttribute('data-theme') === 'light';
-  btnThemeToggle.textContent = isLight ? '☀️ Thème clair' : '🌙 Thème sombre';
+  btnThemeToggle.textContent = isLight ? '☀️' : '🌙';
+  btnThemeToggle.title = isLight ? 'Passer au thème sombre' : 'Passer au thème clair';
 }
 
 updateThemeToggleLabel();
